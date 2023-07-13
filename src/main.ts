@@ -83,7 +83,7 @@ class SatelliteObject {
         );
 
         // creating material
-        let circleMaterial = new THREE.LineBasicMaterial({ color: 0xffffff });
+        let circleMaterial = new THREE.LineBasicMaterial({ color: 0xffffff, opacity:0.5, transparent:true });
         if (selected) circleMaterial = new THREE.LineBasicMaterial({ color: 0x00ff00 });
 
         let quaternion = new THREE.Quaternion();
