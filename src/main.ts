@@ -160,7 +160,7 @@ class App {
     constructor(container: HTMLDivElement) {
         this.container = container
         this.renderer = new THREE.WebGLRenderer({ antialias: true });
-        this.renderer.setSize(container.offsetWidth , container.offsetHeight);
+        this.renderer.setSize(container.offsetWidth, container.offsetHeight);
         this.renderer.useLegacyLights = false;
         container.appendChild(this.renderer.domElement);
 
@@ -182,10 +182,10 @@ class App {
     protected init() {
         this.renderer.domElement.addEventListener('click', (e) => {
             const pointer = new THREE.Vector2();
-            pointer.x = (e.clientX / window.innerWidth) * 2 - 1;
-            pointer.y = - (e.clientY / window.innerHeight) * 2 + 1;
+            pointer.x = (e.clientX / this.container.offsetWidth) * 2 - 1;
+            pointer.y = - (e.clientY / this.container.offsetHeight) * 2 + 1;
 
-        //     console.log(this.renderer.domElement.clientWidth, this.renderer.domElement.clientHeight)
+            //     console.log(this.renderer.domElement.clientWidth, this.renderer.domElement.clientHeight)
 
             this.checkIntersection(pointer);
         });
@@ -252,9 +252,9 @@ class App {
             const selectedObject = intersects[0].object;
             const sat = findSatellite(selectedObject);
             if (sat) {
-                const color=getRandomColor()
-                sat.traverse((child:any) => {
-                    if(child instanceof THREE.Mesh){
+                const color = getRandomColor()
+                sat.traverse((child: any) => {
+                    if (child instanceof THREE.Mesh) {
                         (child as any).material.color.set(color);
                     }
                 })
