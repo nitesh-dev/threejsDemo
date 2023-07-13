@@ -133,21 +133,22 @@ class SatelliteObject {
 
 class App {
     renderer: THREE.WebGLRenderer;
-
     camera: THREE.PerspectiveCamera;
     controls: OrbitControls;
     modelLoader: GLTFLoader;
     raycaster: THREE.Raycaster;
 
     satelliteObjects = Array<SatelliteObject>()
+    container: HTMLDivElement
 
     constructor(container: HTMLDivElement) {
+        this.container = container
         this.renderer = new THREE.WebGLRenderer({ antialias: true });
-        this.renderer.setSize(window.innerWidth, window.innerHeight);
+        this.renderer.setSize(container.offsetWidth , container.offsetHeight);
         this.renderer.useLegacyLights = false;
         container.appendChild(this.renderer.domElement);
 
-        this.camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+        this.camera = new THREE.PerspectiveCamera(75, container.offsetWidth / container.offsetHeight, 0.1, 1000);
         this.controls = new OrbitControls(this.camera, this.renderer.domElement);
         this.controls.target.set(0, 0.5, 0);
 
@@ -162,15 +163,15 @@ class App {
 
     }
     protected init() {
-        this.renderer.domElement.addEventListener('click', (e) => {
-            const mouse = new THREE.Vector2();
-            mouse.x = ( e.clientX / window.innerWidth ) * 2 - 1;
-            mouse.y = - ( e.clientY / window.innerHeight ) * 2 + 1;
+        // this.renderer.domElement.addEventListener('click', (e) => {
+        //     const mouse = new THREE.Vector2();
+        //     mouse.x = (e.clientX / this.container.offsetWidth) * 2 - 1;
+        //     mouse.y = - (e.clientY / this.container.offsetHeight) * 2 + 1;
 
-            console.log(this.renderer.domElement.clientWidth, this.renderer.domElement.clientHeight)
+        //     console.log(this.renderer.domElement.clientWidth, this.renderer.domElement.clientHeight)
 
-            this.checkIntersection(mouse);
-        });
+        //     this.checkIntersection(mouse);
+        // });
 
         //meshes and models
         group.add(this.createEarth())
@@ -188,7 +189,7 @@ class App {
             id: 1,
             latitude: -5.440049,
             longitude: 100,
-            selected: false
+            selected: true
         })
 
 
@@ -213,7 +214,7 @@ class App {
 
     }
 
-    private checkIntersection(mouse:THREE.Vector2) {
+    private checkIntersection(mouse: THREE.Vector2) {
 
         this.raycaster.setFromCamera(mouse, this.camera);
 
@@ -315,11 +316,11 @@ let earthSpecularTexture = await textureLoader.loadAsync('./earth-specular-textu
 var scene = new THREE.Scene();
 var group = new THREE.Group()
 
-const app = new App(document.querySelector('#app') as HTMLDivElement);
+const app = new App(document.querySelector('#canvas-holder') as HTMLDivElement);
 
 let previousTimestamp = 0;
 const earthSpeed = 0.1;
-app.camera.position.z = 10
+app.camera.position.z = 5
 
 function animate(timestamp: number) {
     // calculating delta time in second, because requestAnimationFrame will give time in milliseconds
