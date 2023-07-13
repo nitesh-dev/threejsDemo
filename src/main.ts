@@ -185,8 +185,6 @@ class App {
             pointer.x = (e.clientX / this.container.offsetWidth) * 2 - 1;
             pointer.y = - (e.clientY / this.container.offsetHeight) * 2 + 1;
 
-            //     console.log(this.renderer.domElement.clientWidth, this.renderer.domElement.clientHeight)
-
             this.checkIntersection(pointer);
         });
 
@@ -194,43 +192,7 @@ class App {
         group.add(this.createEarth())
 
         //temp
-        {
-            let temp = Array<{ id: number, latitude: number, longitude: number, selected: boolean }>()
-            temp.push({
-                id: 0,
-                latitude: -27.440049,
-                longitude: 135.427246,
-                selected: false
-            })
 
-            temp.push({
-                id: 1,
-                latitude: -5.440049,
-                longitude: 100,
-                selected: false
-            })
-
-
-            temp.push({
-                id: 2,
-                latitude: 50,
-                longitude: 100,
-                selected: false
-            })
-
-
-            temp.push({
-                id: 3,
-                latitude: -50,
-                longitude: 100,
-                selected: false
-            })
-
-
-
-            this.updateObjects(temp)
-
-        }
 
     }
 
@@ -271,62 +233,12 @@ class App {
     }
     animate() {
         this.controls.update();
-
         this.renderer.render(scene, this.camera);
     }
     resize() {
 
     }
-    private updateObjects(objects: Array<{ id: number, latitude: number, longitude: number, selected: boolean }>) {
 
-        let matchedObject = Array<SatelliteObject>()
-
-        // updating previous objects
-        this.satelliteObjects.forEach(item => {
-            const index = this.findSameObject(item.id, objects)
-
-            // if match found
-            if (index != -1) {
-
-                // update the object if coordinate changes or selected changes
-                if (item.latitude != objects[index].latitude || item.longitude != objects[index].longitude || item.selected != objects[index].selected) {
-
-                    item.selected = objects[index].selected
-                    item.update(objects[index].latitude, objects[index].longitude)
-                }
-
-                matchedObject.push(item)
-
-                // removing the matched object from search
-                objects.splice(index, 1)
-
-            } else {
-
-                // remove the object from render
-                item.remove()
-            }
-        });
-
-
-        // creating the remaining elements
-        objects.forEach(item => {
-            const obj = new SatelliteObject(item.latitude, item.longitude, item.id, item.selected)
-            matchedObject.push(obj)
-        });
-
-        this.satelliteObjects = matchedObject
-    }
-    private findSameObject(id: number, objects: Array<{ id: number, latitude: number, longitude: number, selected: boolean }>) {
-        for (let index = 0; index < objects.length; index++) {
-
-            if (objects[index].id == id) {
-                return index
-            }
-
-        }
-
-        return -1
-    }
     private createEarth() {
         // setting up earth model
         var geometry = new THREE.SphereGeometry(2, 32, 32);
@@ -340,6 +252,10 @@ class App {
     }
 
 }
+
+
+
+
 
 let modelLoader = new GLTFLoader();
 let model = await modelLoader.loadAsync('./scene.gltf');
@@ -358,6 +274,110 @@ const app = new App(document.querySelector('#canvas-holder') as HTMLDivElement);
 let previousTimestamp = 0;
 const earthSpeed = 0.1;
 app.camera.position.z = 5
+
+
+
+
+
+
+
+
+
+
+
+// called from react
+function updateObjects(objects: Array<{ id: number, latitude: number, longitude: number, selected: boolean }>) {
+
+    let matchedObject = Array<SatelliteObject>()
+
+    // updating previous objects
+    app.satelliteObjects.forEach(item => {
+        const index = findSameObject(item.id, objects)
+
+        // if match found
+        if (index != -1) {
+
+            // update the object if coordinate changes or selected changes
+            if (item.latitude != objects[index].latitude || item.longitude != objects[index].longitude || item.selected != objects[index].selected) {
+
+                item.selected = objects[index].selected
+                item.update(objects[index].latitude, objects[index].longitude)
+            }
+
+            matchedObject.push(item)
+
+            // removing the matched object from search
+            objects.splice(index, 1)
+
+        } else {
+
+            // remove the object from render
+            item.remove()
+        }
+    });
+
+
+    // creating the remaining elements
+    objects.forEach(item => {
+        const obj = new SatelliteObject(item.latitude, item.longitude, item.id, item.selected)
+        matchedObject.push(obj)
+    });
+
+    app.satelliteObjects = matchedObject
+}
+
+function findSameObject(id: number, objects: Array<{ id: number, latitude: number, longitude: number, selected: boolean }>) {
+    for (let index = 0; index < objects.length; index++) {
+
+        if (objects[index].id == id) {
+            return index
+        }
+
+    }
+
+    return -1
+}
+
+
+// ------------- temp data -----------------
+let temp = Array<{ id: number, latitude: number, longitude: number, selected: boolean }>()
+temp.push({
+    id: 0,
+    latitude: -27.440049,
+    longitude: 135.427246,
+    selected: false
+})
+
+temp.push({
+    id: 1,
+    latitude: -5.440049,
+    longitude: 100,
+    selected: false
+})
+
+
+temp.push({
+    id: 2,
+    latitude: 50,
+    longitude: 100,
+    selected: false
+})
+
+
+temp.push({
+    id: 3,
+    latitude: -50,
+    longitude: 100,
+    selected: false
+})
+
+
+
+updateObjects(temp)
+
+
+
+
 
 function animate(timestamp: number) {
     // calculating delta time in second, because requestAnimationFrame will give time in milliseconds
