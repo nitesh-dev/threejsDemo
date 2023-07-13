@@ -37,7 +37,7 @@ class SatelliteObject {
 
         // adding to scene
         group.add(this.modelClone)
-        console.log(this.modelClone)
+
 
     }
 
@@ -65,8 +65,8 @@ class SatelliteObject {
         if (this.paths != null) {
 
             // delete the previous path
-            group.remove(this.paths[0])
-            group.remove(this.paths[1])
+            lineCircleGroup.remove(this.paths[0])
+            lineCircleGroup.remove(this.paths[1])
 
             // create the path again
             this.paths = this.createSatellitePath(coordinate, this.selected)
@@ -103,15 +103,19 @@ class SatelliteObject {
 
 
         // adding to scene
-        group.add(circle)
-        group.add(line)
+        lineCircleGroup.add(circle)
+        lineCircleGroup.add(line)
 
         return [circle, line]
     }
 
     private createSatellite(pos: THREE.Vector3) {
         let modelClone = model.scene.clone()
-
+        modelClone.traverse((child) => {
+            if (child instanceof THREE.Mesh) {
+                child.material = child.material.clone()
+            }
+        })
         modelClone.name = 'satellite'
         modelClone.position.set(pos.x, pos.y, pos.z)
         modelClone.scale.set(0.02, 0.02, 0.02)
@@ -130,6 +134,18 @@ class SatelliteObject {
     }
 
 }
+function getRandomColor() {
+    // Generate three random values for red, green, and blue channels
+    var r = Math.floor(Math.random() * 256);
+    var g = Math.floor(Math.random() * 256);
+    var b = Math.floor(Math.random() * 256);
+
+    // Convert the RGB values to a hexadecimal string
+    var hex = "#" + ((1 << 24) | (r << 16) | (g << 8) | b).toString(16).slice(1);
+
+    return hex;
+}
+
 
 class App {
     renderer: THREE.WebGLRenderer;
@@ -159,72 +175,92 @@ class App {
         var ambientLight = new THREE.AmbientLight(0xffffff, 3); // Soft white light
         scene.add(ambientLight);
         scene.add(group)
+        scene.add(lineCircleGroup)
         this.init()
 
     }
     protected init() {
-        // this.renderer.domElement.addEventListener('click', (e) => {
-        //     const mouse = new THREE.Vector2();
-        //     mouse.x = (e.clientX / this.container.offsetWidth) * 2 - 1;
-        //     mouse.y = - (e.clientY / this.container.offsetHeight) * 2 + 1;
+        this.renderer.domElement.addEventListener('click', (e) => {
+            const pointer = new THREE.Vector2();
+            pointer.x = (e.clientX / window.innerWidth) * 2 - 1;
+            pointer.y = - (e.clientY / window.innerHeight) * 2 + 1;
 
         //     console.log(this.renderer.domElement.clientWidth, this.renderer.domElement.clientHeight)
 
-        //     this.checkIntersection(mouse);
-        // });
+            this.checkIntersection(pointer);
+        });
 
         //meshes and models
         group.add(this.createEarth())
 
         //temp
-        let temp = Array<{ id: number, latitude: number, longitude: number, selected: boolean }>()
-        temp.push({
-            id: 0,
-            latitude: -27.440049,
-            longitude: 135.427246,
-            selected: false
-        })
+        {
+            let temp = Array<{ id: number, latitude: number, longitude: number, selected: boolean }>()
+            temp.push({
+                id: 0,
+                latitude: -27.440049,
+                longitude: 135.427246,
+                selected: false
+            })
 
-        temp.push({
-            id: 1,
-            latitude: -5.440049,
-            longitude: 100,
-            selected: true
-        })
-
-
-        temp.push({
-            id: 2,
-            latitude: 50,
-            longitude: 100,
-            selected: false
-        })
+            temp.push({
+                id: 1,
+                latitude: -5.440049,
+                longitude: 100,
+                selected: false
+            })
 
 
-        temp.push({
-            id: 3,
-            latitude: -50,
-            longitude: 100,
-            selected: false
-        })
+            temp.push({
+                id: 2,
+                latitude: 50,
+                longitude: 100,
+                selected: false
+            })
+
+
+            temp.push({
+                id: 3,
+                latitude: -50,
+                longitude: 100,
+                selected: false
+            })
 
 
 
-        this.updateObjects(temp)
+            this.updateObjects(temp)
+
+        }
 
     }
+
 
     private checkIntersection(mouse: THREE.Vector2) {
 
         this.raycaster.setFromCamera(mouse, this.camera);
 
         const intersects = this.raycaster.intersectObject(group, true);
-
+        function findSatellite(object: any) {
+            if (object == null) return null
+            if (object.name == "satellite") {
+                return object
+            }
+            return findSatellite(object.parent)
+        }
         if (intersects.length > 0) {
 
             const selectedObject = intersects[0].object;
-            console.log(selectedObject)
-            //selectedObject.material.color.set('#69f');
+            const sat = findSatellite(selectedObject);
+            if (sat) {
+                const color=getRandomColor()
+                sat.traverse((child:any) => {
+                    if(child instanceof THREE.Mesh){
+                        (child as any).material.color.set(color);
+                    }
+                })
+
+            }
+
 
         } else {
 
@@ -315,6 +351,7 @@ let earthSpecularTexture = await textureLoader.loadAsync('./earth-specular-textu
 
 var scene = new THREE.Scene();
 var group = new THREE.Group()
+var lineCircleGroup = new THREE.Group()
 
 const app = new App(document.querySelector('#canvas-holder') as HTMLDivElement);
 
@@ -328,6 +365,7 @@ function animate(timestamp: number) {
     previousTimestamp = timestamp
 
     group.rotation.y += earthSpeed * delta;
+    lineCircleGroup.rotation.y += earthSpeed * delta;
 
     app.animate()
     // rerender the scene
