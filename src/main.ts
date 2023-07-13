@@ -213,15 +213,27 @@ class App {
 
             const selectedObject = intersects[0].object;
             const sat = findSatellite(selectedObject);
-            if (sat) {
-                const color = getRandomColor()
-                sat.traverse((child: any) => {
-                    if (child instanceof THREE.Mesh) {
-                        (child as any).material.color.set(color);
-                    }
-                })
 
+            // finding selected satellite index
+            for (let index = 0; index < app.satelliteObjects.length; index++) {
+                const element = app.satelliteObjects[index];
+                if (element.modelClone == sat) {
+                    onObjectSelect(index)
+                    break
+                }
             }
+
+            // if (sat) {
+            //     const color = getRandomColor()
+            //     sat.traverse((child: any) => {
+            //         if (child instanceof THREE.Mesh) {
+            //             (child as any).material.color.set(color);
+            //         }
+            //     })
+
+            // }
+
+
 
 
         } else {
@@ -286,6 +298,14 @@ app.camera.position.z = 5
 
 
 // called from react
+
+function onObjectSelect(index: number){
+    alert(app.satelliteObjects[index].id)
+
+    // TODO call react function from here, send selected id
+}
+
+
 function updateObjects(objects: Array<{ id: number, latitude: number, longitude: number, selected: boolean }>) {
 
     let matchedObject = Array<SatelliteObject>()
@@ -342,10 +362,10 @@ function findSameObject(id: number, objects: Array<{ id: number, latitude: numbe
 // ------------- temp data -----------------
 let temp = Array<{ id: number, latitude: number, longitude: number, selected: boolean }>()
 temp.push({
-    id: 0,
-    latitude: -27.440049,
-    longitude: 135.427246,
-    selected: false
+    id: 100,
+    latitude: 20.5937,
+    longitude: 78.9629,
+    selected: true
 })
 
 temp.push({
